@@ -1,47 +1,76 @@
 import { useEffect, useState } from "react"
-import type { Country } from "../types/Country"
-import { data } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
+import type { Country } from "../types/Country";
 
 
 export default function Detail() {
 
-    const [countries, setCountries] = useState<Country[]>([]);
+    const { cca3 } = useParams<{ cca3: string }>();
+    const [country, setCountry] = useState<Country | null>(null);
     const [loding, setLoading] = useState(true);
 
     useEffect(() => {
-        fetch("https://restcountries.com/v3.1/all?fields=name,cca3,flags,region,capital,population,languages")
-            .then((res) => res.json())
-            .then((data) => setCountries(data))
-            .finally(() => setLoading(false));
-    }, [])
+        if (!cca3) return;
 
-    if(loding) return <p>Carregando País...</p>
+        async function fetchCountry() {
+            try {
+                const res = await fetch(`https://restcountries.com/v3.1/alpha/${cca3}`)
+                const data: Country[] = await res.json();
+                setCountry(data[0]);
 
+            } catch (erro) {
+                console.log(`Erro ao buscar país ${erro}`);
+
+            } finally {
+                setLoading(false);
+            }
+        }
+        fetchCountry();
+    }, [cca3]);
+
+    if (loding) return <p>Carregando Detalhes...</p>
+    if (!country) return <p>País não encontrado.</p>;
 
     return (
 
-        {countries.map((country)) =>
-            (
-           <div
-            style={{
-                border: "1px solid #ccc",
-                borderRadius: "10px",
-                padding: "1rem",
-                textAlign: "center",
-                background: "#f8f8f8",
-            }}
-        >
-            <img
-                src={country.flags.png}
-                alt={country.flags.alt || `Bandeira de ${country.name.common}`}
-                style={{ width: "100px", borderRadius: "5px" }}
-            />
-            <h2>{country.name.common}</h2>
-            <p>🌎 Região: {country.region}</p>
-            <p>🏙️ Capital: {country.capital ? country.capital[0] : "N/A"}</p>
-            <p>👥 População: {country.population.toLocaleString("pt-BR")}</p>
-        </div> 
-        )}
-        
+        <div style={{ padding: "2rem", display: "flex", flexDirection: "column", alignItems: "center", margin: "20px", overflow: "hidden" }}>
+            <Link 
+            style={{ 
+                textDecoration: "none",
+                background: "#8acbe9",
+                padding: "10px",
+                borderRadius: "5px"
+            }} to="/">⬅️ Voltar</Link>
+
+            <div
+                style={{
+                    marginTop: "2rem",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    background: "#d6d6d6",
+                    padding: "20px",
+                    width: "500px",
+                    borderRadius: "10px"
+                }}
+            >
+                <img
+                    src={country.flags.png}
+                    alt={country.flags.alt || `Bandeira de ${country.name.common}`}
+                    style={{ width: "200px", borderRadius: "10px" }}
+                />
+                <h1>{country.name.common}</h1>
+                <h3>{country.name.official}</h3>
+                <p>🌍 Região: {country.region}</p>
+                <p>🏙️ Capital: {country.capital ? country.capital[0] : "N/A"}</p>
+                <p>👥 População: {country.population.toLocaleString("pt-BR")}</p>
+                {country.languages && (
+                    <p>
+                        🗣️ Idiomas: {Object.values(country.languages).join(", ")}
+                    </p>
+                )}
+            </div>
+        </div>
+
     )
 }
