@@ -50,6 +50,8 @@ export default function Home() {
             filtered = filtered.filter((country) => country.region === region);
         }
 
+        
+        
         return filtered;
     }
 
@@ -62,6 +64,7 @@ export default function Home() {
 
     function goToPage(page: number) {
         if (page < 1 || page > totalPages) return
+        
         setCurrentPage(page);
         window.scroll({ top: 0, behavior: "smooth" });
     }
@@ -85,12 +88,18 @@ export default function Home() {
                     type="text"
                     placeholder="Buscar..."
                     value={input}
-                    onChange={(e) => setInput(e.target.value)}
+                    onChange={(e) => {
+                        setInput(e.target.value)
+                        setCurrentPage(1)
+                    }}
                 />
 
                 <select className="select"
                     value={region}
-                    onChange={(e) => setRegion(e.target.value)}
+                    onChange={(e) => {
+                        setRegion(e.target.value)
+                        setCurrentPage(1);
+                    }}
                     style={{
                         padding: "0.5rem",
                         borderRadius: "5px",
