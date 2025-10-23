@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
 import type { Country } from "../types/Country";
+
 import './home.css'
 
 
@@ -13,6 +14,7 @@ export default function Home() {
     const [input, setInput] = useState("");
     const [region, setRegion] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
+    const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
     const countriesPage = 10;
 
@@ -50,10 +52,16 @@ export default function Home() {
             filtered = filtered.filter((country) => country.region === region);
         }
 
-        
-        
+        filtered = filtered.sort((a, b) => 
+            sortOrder === "asc"
+            ?a.name.common.localeCompare(b.name.common)
+            :b.name.common.localeCompare(a.name.common)
+        );
+
         return filtered;
     }
+
+
 
     const filteredCountries = buscarCountries();
 
@@ -64,7 +72,7 @@ export default function Home() {
 
     function goToPage(page: number) {
         if (page < 1 || page > totalPages) return
-        
+
         setCurrentPage(page);
         window.scroll({ top: 0, behavior: "smooth" });
     }
@@ -83,7 +91,7 @@ export default function Home() {
             width: "100%"
         }}>
             <h1 className="title">🌍 Lista de Países</h1>
-            <div className="containerHeader" style={{justifyContent: "center" }}>
+            <div className="containerHeader" style={{ justifyContent: "center" }}>
                 <input className="input"
                     type="text"
                     placeholder="Buscar..."
@@ -124,7 +132,7 @@ export default function Home() {
                 >
                     Buscar
                 </button>
-                <div style={{display: "flex", gap: "10px", alignItems: "center" }}>
+                <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
                     <button
                         disabled={currentPage === 1}
                         onClick={() => goToPage(currentPage - 1)}
@@ -159,6 +167,19 @@ export default function Home() {
                         Próxima →
                     </button>
                 </div>
+                <select
+                    value={sortOrder}
+                    onChange={(e) => setSortOrder(e.target.value as "asc" | "desc")}
+                    style={{
+                        padding: "0.5rem",
+                        borderRadius: "5px",
+                        border: "1px solid #ccc",
+                        marginRight: "0.5rem",
+                    }}
+                >
+                    <option value="asc">A → Z</option>
+                    <option value="desc">Z → A</option>
+                </select>
             </div>
             <div className="countries-grid">
                 {currentCountries.map((country) => (
